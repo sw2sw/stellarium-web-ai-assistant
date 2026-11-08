@@ -2,9 +2,9 @@
   "_comment": "Template only. release/package-assets.mjs writes the real RELEASE-MANIFEST.json into assets/. Do not hand-edit hashes into this file; regenerate instead. The source asset is 'project-source', not the complete corresponding source: keep source_scope.complete=false until the upstream tree from the pinned commit is actually shipped or the offer is stated and signed off.",
   "schema": 2,
   "component": "stellarium-web-ai-assistant",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "bridge": {
-    "loader": "<loader version, e.g. 0.10.0>",
+    "loader": "<loader version, e.g. 0.11.0>",
     "protocolVersion": 2
   },
   "upstream": {
@@ -84,6 +84,10 @@
       "package": "<sha256>"
     },
     "naming-reference.js": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    },
+    "sky-targets.js": {
       "source": "<sha256>",
       "package": "<sha256>"
     },
