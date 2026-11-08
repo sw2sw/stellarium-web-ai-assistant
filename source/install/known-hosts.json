@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "notes": [
+    "Host builds this installer is allowed to patch without extra flags.",
+    "pristineIndexSha256 is the hash of index.html BEFORE any assistant block is injected",
+    "(i.e. after stripBlock). engineWasmSha256 pins the compiled engine, which is the",
+    "part that must not silently change under the assistant.",
+    "This host build carries locales/zh.json and the __SWE_SET_LANG__ hook added to",
+    "main.js (docs/UPSTREAM-BUILD.md patch 0002), so the assistant can switch the host",
+    "UI language. The engine WASM is byte-identical to the earlier build:",
+    "e091e9f35c2ddf1a3d8ec7c1a4184b4b8dcebcd6f180a5e0b782022b51d42c29.",
+    "The previous en-only host build (index dc7cd930..., app.320979bc.js) is no longer",
+    "shipped; install into it now reports 'unknown host' on purpose."
+  ],
+  "hosts": [
+    {
+      "id": "stellarium-web-engine@1162c9ef-web-frontend-zh",
+      "upstreamCommit": "1162c9ef73cc94f4762dfbfd24c637190119ea93",
+      "pristineIndexSha256": "4e4f836b8304a2215e8cd6b1903d5a0b7b0c6b64532703092e75c9294535d848",
+      "engineWasmSha256": "e091e9f35c2ddf1a3d8ec7c1a4184b4b8dcebcd6f180a5e0b782022b51d42c29",
+      "bundles": [
+        "js/chunk-vendors.626b629f.js",
+        "js/app.a08a3202.js",
+        "js/chunk-2d2253ec.80d31482.js"
+      ]
+    }
+  ]
+}

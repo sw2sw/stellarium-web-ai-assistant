@@ -1,0 +1,13 @@
+diff --git a/apps/web-frontend/package.json b/apps/web-frontend/package.json
+index b16b3fab..48fcbaba 100644
+--- a/apps/web-frontend/package.json
++++ b/apps/web-frontend/package.json
+@@ -18,7 +18,7 @@
+     "moment": "^2.31.0",
+     "roboto-fontface": "*",
+     "v-click-outside": "^3.1.2",
+-    "vue": "^3.0.0",
++    "vue": "^2.6.11",
+     "vue-cookie": "^1.1.4",
+     "vue-fullscreen": "^2.1.5",
+     "vue-i18n": "^8.0.0",

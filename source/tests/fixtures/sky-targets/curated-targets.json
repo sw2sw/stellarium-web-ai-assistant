@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "source": { "name": "测试精选夹具", "version": "0.0.1", "reference": "tests/fixtures/sky-targets" },
+  "targets": [
+    {
+      "id": "m45",
+      "designation": "M 45",
+      "nameZh": "昴星团（夹具）",
+      "nameEn": "Pleiades (fixture)",
+      "type": "疏散星团",
+      "modes": ["eye", "scope"],
+      "difficulty": "easy",
+      "features": "夹具条目：肉眼看是一小团星，小望远镜里成员更多。仅用于测试装载边界，不是正式目标库。",
+      "limits": "夹具数据，不作为观测依据。"
+    },
+    {
+      "id": "bogus1",
+      "designation": "XX 9999",
+      "nameZh": "不存在的目标（夹具）",
+      "nameEn": "Bogus (fixture)",
+      "type": "测试",
+      "modes": ["eye", "scope"],
+      "difficulty": "easy",
+      "features": "引擎查不到的 designation，验证降级路径。",
+      "limits": ""
+    }
+  ]
+}

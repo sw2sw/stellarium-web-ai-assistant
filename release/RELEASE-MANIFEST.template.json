@@ -1,0 +1,102 @@
+{
+  "_comment": "Template only. release/package-assets.mjs writes the real RELEASE-MANIFEST.json into assets/. Do not hand-edit hashes into this file; regenerate instead. The source asset is 'project-source', not the complete corresponding source: keep source_scope.complete=false until the upstream tree from the pinned commit is actually shipped or the offer is stated and signed off.",
+  "schema": 2,
+  "component": "stellarium-web-ai-assistant",
+  "version": "0.13.0",
+  "bridge": {
+    "loader": "<loader version, e.g. 0.10.0>",
+    "protocolVersion": 2
+  },
+  "upstream": {
+    "repository": "https://github.com/Stellarium/stellarium-web-engine",
+    "commit": "1162c9ef73cc94f4762dfbfd24c637190119ea93",
+    "licence": "AGPL-3.0"
+  },
+  "built_from": "reviewed delivery snapshot; no rebuild, no network",
+  "generated_at": "<ISO 8601, filled by the script>",
+  "git_commit": null,
+  "git_commit_note": "Bound after the candidate commit exists, via --git-commit <40 hex>. A null here means 'not yet committed', not 'no source'.",
+  "assets": [
+    {
+      "role": "runtime-site",
+      "file": "stellarium-web-ai-assistant-<version>-candidate-runtime.tar.gz",
+      "bytes": 0,
+      "sha256": "<filled by the script>",
+      "unpack_to": "dist/"
+    },
+    {
+      "role": "assistant-package",
+      "file": "stellarium-web-ai-assistant-<version>-candidate-assistant.tar.gz",
+      "bytes": 0,
+      "sha256": "<filled by the script>",
+      "unpack_to": "assistant/"
+    },
+    {
+      "role": "project-source",
+      "file": "stellarium-web-ai-assistant-<version>-candidate-project-source.tar.gz",
+      "bytes": 0,
+      "sha256": "<filled by the script>",
+      "unpack_to": "stellarium-web-ai-assistant-<version>-candidate/"
+    }
+  ],
+  "source_scope": {
+    "complete": false,
+    "archive_role": "project-source",
+    "contains": [
+      "this project's source, tests, tools and docs (source/)",
+      "the three host patches and Dockerfile.engine (source/upstream/patches/)",
+      "upstream lock: repository, commit, licence, change list (source/upstream/LOCK.md)",
+      "build recipe (source/docs/UPSTREAM-BUILD.md)",
+      "licence texts (LICENSE, NOTICE, THIRD-PARTY.md)"
+    ],
+    "missing_components": [
+      {
+        "component": "stellarium-web-engine",
+        "repository": "https://github.com/Stellarium/stellarium-web-engine",
+        "commit": "1162c9ef73cc94f4762dfbfd24c637190119ea93",
+        "paths": [
+          "apps/web-frontend",
+          "src",
+          "apps/test-skydata"
+        ],
+        "reason": "The upstream checkout is not present on the packaging host and downloading it is outside this task."
+      }
+    ],
+    "how_to_complete": "See SOURCE-ACCESS.md; verify matching source/build materials available to website users. Never mark complete just because a pinned URL exists."
+  },
+  "source_archive": {
+    "built_from_allowlist": true,
+    "allowlist": [
+      "<filled by the script>"
+    ],
+    "files": 0,
+    "directories": 0,
+    "skipped_by_rules": [],
+    "not_allowlisted": []
+  },
+  "core_files": {
+    "assistant.js": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    },
+    "assistant.css": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    },
+    "naming-reference.js": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    },
+    "manifest.json": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    },
+    "loader.js": {
+      "source": "<sha256>",
+      "package": "<sha256>"
+    }
+  },
+  "evidence_scope": {
+    "current_run": "Local packaging/static verification only; no model calls or deployment; private raw evidence excluded."
+  }
+}

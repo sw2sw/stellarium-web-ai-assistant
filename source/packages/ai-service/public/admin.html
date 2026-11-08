@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>服务器 AI 管理</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --ink: #1c2024; --muted: #5b6570;
+    --line: #dfe3e8; --accent: #1f6feb; --ok: #1a7f37; --warn: #9a6700; --err: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.55 -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 14px; margin: 0 0 12px; letter-spacing: .02em; }
+  .row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .row > label { color: var(--muted); font-size: 13px; }
+  input[type=text], input[type=password], input[type=number], select, textarea {
+    width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px;
+    font: inherit; background: #fff; color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 54px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  button {
+    font: inherit; padding: 7px 13px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.danger { border-color: #f0b4ae; color: var(--err); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 10px; font-size: 13px; }
+  .kv div:nth-child(odd) { color: var(--muted); }
+  .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; word-break: break-all; }
+  .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 999px;
+    font-size: 12px; border: 1px solid var(--line); background: #f2f4f6;
+  }
+  .pill.on { color: var(--ok); border-color: #b7dfc3; background: #eef8f1; }
+  .pill.off { color: var(--muted); }
+  .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .out { margin-top: 12px; font-size: 13px; white-space: pre-wrap; }
+  .out.ok { color: var(--ok); }
+  .out.err { color: var(--err); }
+  .out.warn { color: var(--warn); }
+  .hide { display: none; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  @media (max-width: 620px) {
+    .row, .kv, .grid2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>服务器 AI 管理</h1>
+  <div class="sub">
+    这里的设置只影响本站服务器转发给模型的请求。保存不会调用模型；调用模型只有「生成测试」一个按钮，且占用一次额度。
+  </div>
+
+  <!-- login -->
+  <section class="card" id="loginCard">
+    <h2>管理员登录</h2>
+    <div class="row">
+      <label for="token">管理口令</label>
+      <input type="password" id="token" autocomplete="current-password" spellcheck="false">
+    </div>
+    <div class="btns">
+      <button class="primary" id="loginBtn">登录</button>
+    </div>
+    <p class="note">口令由部署方在服务器上的管理口令文件中预置，不在本页面、也不在交付包里。课堂口令不能进入这里。</p>
+    <div class="out" id="loginOut"></div>
+  </section>
+
+  <!-- status -->
+  <section class="card hide" id="statusCard">
+    <h2>当前状态</h2>
+    <div class="kv" id="statusKv"></div>
+    <div class="btns">
+      <button id="refreshBtn">刷新</button>
+      <button id="logoutBtn">退出登录</button>
+    </div>
+  </section>
+
+  <!-- config -->
+  <section class="card hide" id="configCard">
+    <h2>上游配置</h2>
+    <div class="row">
+      <label for="baseUrl">Base URL</label>
+      <input type="text" id="baseUrl" placeholder="http://127.0.0.1:11434/v1" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="row">
+      <label for="model">模型 ID</label>
+      <input type="text" id="model" placeholder="qwen2.5:7b" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="row">
+      <label for="key">API Key</label>
+      <input type="password" id="key" placeholder="留空表示不修改已保存的 Key" autocomplete="new-password" spellcheck="false">
+    </div>
+    <div class="row">
+      <label for="authMode">认证方式</label>
+      <select id="authMode">
+        <option value="auto">auto — 有 Key 就发 Authorization，没有就不发</option>
+        <option value="none">none — 从不发送 Authorization（Ollama 等）</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="note">给老师看的说明</label>
+      <input type="text" id="note" placeholder="例如：本地 Gemma，仅讲解，不联网" maxlength="500">
+    </div>
+    <div class="row">
+      <label for="enabled">对外启用</label>
+      <div><input type="checkbox" id="enabled"> <span class="note" style="display:inline">关闭后新请求立刻被拒绝；已在途的请求不会被中断。</span></div>
+    </div>
+
+    <details>
+      <summary>高级：超时、并发、每日额度</summary>
+      <div class="grid2" style="margin-top:12px">
+        <div class="row"><label for="maxOutputTokens">最大输出 token</label><input type="number" id="maxOutputTokens" min="16" max="8192"></div>
+        <div class="row"><label for="timeoutMs">总超时（毫秒）</label><input type="number" id="timeoutMs" min="5000" max="300000"></div>
+        <div class="row"><label for="idleTimeoutMs">正文停滞超时（毫秒）</label><input type="number" id="idleTimeoutMs" min="2000" max="120000"></div>
+        <div class="row"><label for="connectTimeoutMs">连接超时（毫秒）</label><input type="number" id="connectTimeoutMs" min="1000" max="30000"></div>
+        <div class="row"><label for="globalInflight">全站并发</label><input type="number" id="globalInflight" min="1" max="64"></div>
+        <div class="row"><label for="perIdentityInflight">单身份并发</label><input type="number" id="perIdentityInflight" min="1" max="16"></div>
+        <div class="row"><label for="dailyGlobal">全站每日上限</label><input type="number" id="dailyGlobal" min="0" max="100000"></div>
+        <div class="row"><label for="dailyPerIdentity">单身份每日上限</label><input type="number" id="dailyPerIdentity" min="0" max="10000"></div>
+        <div class="row"><label for="dayTz">额度结算时区</label><input type="text" id="dayTz" placeholder="Asia/Shanghai"></div>
+      </div>
+      <p class="note">0 表示不限制。额度按访问口令计，不按浏览器 Cookie：换浏览器、清 Cookie、重启服务都不会重置。</p>
+    </details>
+
+    <div class="btns">
+      <button class="primary" id="saveBtn">保存（不调用模型）</button>
+      <button id="probeBtn">检查连接（不生成）</button>
+      <button id="genBtn">生成测试（会占用一次额度）</button>
+      <button class="danger" id="stopBtn">紧急停用</button>
+      <button class="danger" id="clearKeyBtn">清除已保存的 Key</button>
+    </div>
+    <div class="out" id="cfgOut"></div>
+  </section>
+
+  <!-- usage -->
+  <section class="card hide" id="usageCard">
+    <h2>今日额度</h2>
+    <div class="kv" id="usageKv"></div>
+    <p class="note">「未知」表示上游可能已经生成但结果没拿到（超时、断线、5xx）。这类请求不退额度、不自动重发。</p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict'
+  var $ = function (id) { return document.getElementById(id) }
+  var state = { config: null, usage: null, fault: null }
+
+  function out (el, text, kind) {
+    el.textContent = text || ''
+    el.className = 'out' + (kind ? ' ' + kind : '')
+  }
+
+  function api (method, path, body) {
+    var init = { method: method, credentials: 'same-origin', headers: {} }
+    if (body !== undefined) {
+      init.headers['Content-Type'] = 'application/json'
+      init.body = JSON.stringify(body)
+    }
+    return fetch(path, init).then(function (r) {
+      return r.text().then(function (t) {
+        var d = null
+        try { d = t ? JSON.parse(t) : null } catch (e) { d = { error: 'bad_response' } }
+        return { status: r.status, ok: r.ok, data: d }
+      })
+    }, function () { return { status: 0, ok: false, data: { error: 'network' } } })
+  }
+
+  function show (id, yes) { $(id).classList.toggle('hide', !yes) }
+
+  function kv (el, pairs) {
+    el.innerHTML = ''
+    pairs.forEach(function (p) {
+      var a = document.createElement('div'); a.textContent = p[0]
+      var b = document.createElement('div')
+      if (p[2] === 'html') b.innerHTML = p[1]; else b.textContent = p[1]
+      el.appendChild(a); el.appendChild(b)
+    })
+  }
+
+  function renderStatus () {
+    var c = state.config
+    if (!c) return
+    var pill = c.enabled
+      ? '<span class="pill on">已启用</span>'
+      : '<span class="pill off">未启用</span>'
+    var rows = [
+      ['对外可用', pill + (c.live ? '' : ' <span class="pill off">当前不可用</span>'), 'html'],
+      ['配置版本', 'rev ' + c.revision],
+      ['最后修改', (c.updatedAt || '—') + (c.updatedBy ? ' · ' + c.updatedBy : '')],
+      ['Base URL', c.upstream.baseUrl || '（未设置）'],
+      ['模型', c.upstream.model || '（未设置）'],
+      ['Key', c.upstream.hasKey ? '已设置（不回显）' : '未设置'],
+      // 已保存的上游会在每次读取配置时重新对照白名单，重启后缩小白名单也会生效。
+      ['白名单', c.upstream.allowed
+        ? '允许访问'
+        : '<span class="pill off">不在 SWE_AI_ALLOWED_HOSTS 内，不会发出请求</span>', 'html']
+    ]
+    if (state.fault) {
+      // 数据目录或身份密钥坏了，服务是“故障关闭”而不是“当成没配额”：
+      // 前台还能登录、这个页面还能打开，但付费路径一律拒绝。
+      rows.unshift(['启动故障', '<span class="pill off">' + state.fault.area + '：' + state.fault.code +
+        '（付费路径已关闭，需人工修复数据目录）</span>', 'html'])
+    }
+    kv($('statusKv'), rows)
+  }
+
+  function fillForm () {
+    var c = state.config
+    if (!c) return
+    $('baseUrl').value = c.upstream.baseUrl || ''
+    $('model').value = c.upstream.model || ''
+    $('key').value = ''
+    $('authMode').value = c.upstream.authMode || 'auto'
+    $('note').value = c.note || ''
+    $('enabled').checked = !!c.enabled
+    var l = c.limits
+    ;['maxOutputTokens', 'timeoutMs', 'idleTimeoutMs', 'connectTimeoutMs',
+      'globalInflight', 'perIdentityInflight', 'dailyGlobal', 'dailyPerIdentity', 'dayTz'
+    ].forEach(function (k) { $(k).value = l[k] })
+  }
+
+  function renderUsage (u) {
+    if (!u) return
+    if (!u.global) {
+      kv($('usageKv'), [['额度账本', '不可用（见下方故障说明），付费路径已关闭']])
+      return
+    }
+    kv($('usageKv'), [
+      ['结算日', u.day + '（' + u.timezone + '）'],
+      ['全站已用', u.global.used + (u.global.limit > 0 ? ' / ' + u.global.limit : ' / 不限')],
+      ['其中已完成', String(u.global.completed)],
+      ['其中结果未知', String(u.global.unknown)],
+      ['其中已退回', String(u.global.refunded)],
+      ['在途预留', String(u.global.reserved)],
+      ['单身份每日上限', u.perIdentityLimit > 0 ? String(u.perIdentityLimit) : '不限']
+    ])
+  }
+
+  function load () {
+    return api('GET', '/api/admin/config').then(function (r) {
+      if (r.status === 401 || r.status === 403) {
+        show('loginCard', true); show('statusCard', false); show('configCard', false); show('usageCard', false)
+        return false
+      }
+      if (!r.ok) { out($('cfgOut'), '读取配置失败：' + (r.data && r.data.error), 'err'); return false }
+      state.config = r.data.config
+      state.config.live = r.data.live
+      state.usage = r.data.usage
+      state.fault = r.data.fault || null
+      show('loginCard', false); show('statusCard', true); show('configCard', true); show('usageCard', true)
+      renderStatus(); fillForm(); renderUsage(state.usage)
+      return true
+    })
+  }
+
+  $('loginBtn').onclick = function () {
+    var t = $('token').value
+    if (!t) { out($('loginOut'), '请输入管理口令', 'warn'); return }
+    $('loginBtn').disabled = true
+    api('POST', '/api/auth/login', { token: t }).then(function (r) {
+      $('loginBtn').disabled = false
+      if (!r.ok) { out($('loginOut'), '登录失败：' + (r.data && r.data.error), 'err'); return }
+      if (r.data.role !== 'admin') {
+        out($('loginOut'), '这是课堂口令，不能进入管理页。', 'err')
+        api('POST', '/api/auth/logout')
+        return
+      }
+      out($('loginOut'), '')
+      $('token').value = ''
+      load()
+    })
+  }
+
+  $('logoutBtn').onclick = function () {
+    api('POST', '/api/auth/logout').then(function () {
+      state.config = null
+      show('loginCard', true); show('statusCard', false); show('configCard', false); show('usageCard', false)
+    })
+  }
+
+  $('refreshBtn').onclick = load
+
+  function limitsFromForm () {
+    return {
+      maxOutputTokens: Number($('maxOutputTokens').value),
+      timeoutMs: Number($('timeoutMs').value),
+      idleTimeoutMs: Number($('idleTimeoutMs').value),
+      connectTimeoutMs: Number($('connectTimeoutMs').value),
+      globalInflight: Number($('globalInflight').value),
+      perIdentityInflight: Number($('perIdentityInflight').value),
+      dailyGlobal: Number($('dailyGlobal').value),
+      dailyPerIdentity: Number($('dailyPerIdentity').value),
+      dayTz: $('dayTz').value.trim() || 'Asia/Shanghai'
+    }
+  }
+
+  // 这个页面看到的是某一版配置；保存时必须带上这一版号，服务端据此做
+  // compare-and-set。别人（或另一个标签页、或紧急停用）先改过，服务端返回 409，
+  // 这里只刷新表单，绝不带着旧版本号重试，也绝不把旧表单的内容再提交一次。
+  function isConflict (r) {
+    if (r.status === 409) return true
+    var e = r.data && r.data.error
+    return e === 'revision_conflict' || e === 'revision_required'
+  }
+
+  function conflictNote (r) {
+    var rev = (r.data && r.data.revision) || (state.config && state.config.revision)
+    return '配置已被其他人（或另一个标签页）改动，当前 rev ' + rev +
+      '。表单已刷新为最新内容，你刚才的修改没有保存，请重新确认后再保存。'
+  }
+
+  function doSave () {
+    var patch = {
+      baseUrl: $('baseUrl').value.trim(),
+      model: $('model').value.trim(),
+      authMode: $('authMode').value,
+      note: $('note').value.trim(),
+      enabled: $('enabled').checked,
+      limits: limitsFromForm()
+    }
+    var k = $('key').value
+    if (k) patch.key = k
+    patch.expectedRevision = state.config ? state.config.revision : null
+    if (!Number.isInteger(patch.expectedRevision)) {
+      out($('cfgOut'), '没有读到当前配置版本，请先点“刷新”。', 'err')
+      return
+    }
+    $('saveBtn').disabled = true
+    out($('cfgOut'), '保存中…', 'warn')
+    api('PUT', '/api/admin/config', patch).then(function (r) {
+      $('saveBtn').disabled = false
+      if (isConflict(r)) {
+        out($('cfgOut'), '未保存：' + conflictNote(r), 'err')
+        load()
+        return
+      }
+      if (!r.ok) {
+        out($('cfgOut'), '保存失败：' + (r.data && (r.data.error + (r.data.detail ? ' — ' + r.data.detail : ''))), 'err')
+        return
+      }
+      $('key').value = ''
+      out($('cfgOut'), '已保存，rev ' + r.data.revision + '；未调用模型。' +
+        (r.data.live ? '服务器 AI 当前可用。' : '服务器 AI 当前仍不可用（缺少：' + (r.data.missing || []).join(', ') + '）。'),
+        r.data.live ? 'ok' : 'warn')
+      load()
+    })
+  }
+
+  $('saveBtn').onclick = function () { doSave() }
+
+  $('probeBtn').onclick = function () {
+    $('probeBtn').disabled = true
+    out($('cfgOut'), '检查中（只访问 /models，不生成）…', 'warn')
+    api('POST', '/api/admin/test-connection').then(function (r) {
+      $('probeBtn').disabled = false
+      if (!r.ok) { out($('cfgOut'), '检查失败：' + (r.data && r.data.error), 'err'); return }
+      var d = r.data
+      if (!d.ok) { out($('cfgOut'), '不可达：' + d.code + '（未生成任何内容）', 'err'); return }
+      if (d.note === 'models_unsupported') {
+        out($('cfgOut'), '端点可达，但没有 /models 列表（很多兼容服务如此）。这只说明网络通，不代表生成可用。', 'warn')
+      } else {
+        out($('cfgOut'), '端点可达' + (d.models === null ? '' : '，返回 ' + d.models + ' 个模型') +
+          '。这只说明接口可访问，不代表生成调用一定成功。', 'ok')
+      }
+    })
+  }
+
+  $('genBtn').onclick = function () {
+    if (!window.confirm('这会真的调用一次模型，并占用一次额度。确定继续？')) return
+    $('genBtn').disabled = true
+    out($('cfgOut'), '生成中…', 'warn')
+    api('POST', '/api/admin/test-generate').then(function (r) {
+      $('genBtn').disabled = false
+      if (r.status === 503) { out($('cfgOut'), '服务器 AI 未启用或配置不完整。', 'err'); return }
+      if (r.status === 429) { out($('cfgOut'), '今日额度已用完。', 'err'); return }
+      if (!r.ok) { out($('cfgOut'), '生成失败：' + (r.data && r.data.error), 'err'); return }
+      var d = r.data
+      if (!d.ok) {
+        out($('cfgOut'), '生成失败：' + d.code + (d.refunded ? '（未产生生成，额度已退回）' : '（结果未知，额度不退回）'), 'err')
+      } else {
+        out($('cfgOut'), '生成成功，' + d.ms + ' ms，返回 ' + d.chars + ' 字。片段：' + d.preview, 'ok')
+      }
+      load()
+    })
+  }
+
+  $('stopBtn').onclick = function () {
+    if (!window.confirm('立即停用服务器 AI？新请求会立刻被拒绝，已在途的请求不会被中断。')) return
+    api('POST', '/api/admin/emergency-stop').then(function (r) {
+      if (!r.ok) { out($('cfgOut'), '停用失败：' + (r.data && r.data.error), 'err'); return }
+      out($('cfgOut'), '已停用，rev ' + r.data.revision + '。', 'ok')
+      load()
+    })
+  }
+
+  $('clearKeyBtn').onclick = function () {
+    if (!window.confirm('清除服务器上保存的 Key？如果服务器 AI 正在启用，会同时被关闭。')) return
+    var body = { clear: true }
+    body.expectedRevision = state.config ? state.config.revision : null
+    if (!Number.isInteger(body.expectedRevision)) {
+      out($('cfgOut'), '没有读到当前配置版本，请先点“刷新”。', 'err')
+      return
+    }
+    api('POST', '/api/admin/config/key', body).then(function (r) {
+      if (isConflict(r)) {
+        out($('cfgOut'), '未清除：' + conflictNote(r), 'err')
+        load()
+        return
+      }
+      if (!r.ok) { out($('cfgOut'), '清除失败：' + (r.data && r.data.error), 'err'); return }
+      var extra = r.data.leftover ? '（有 ' + r.data.leftover + ' 个旧 Key 文件未能删除，已不再被使用）' : ''
+      out($('cfgOut'), (r.data.changed ? '已清除 Key，rev ' + r.data.revision + '。' : '本来就没有保存 Key。') + extra, 'ok')
+      load()
+    })
+  }
+
+  load()
+})()
+</script>
+</body>
+</html>

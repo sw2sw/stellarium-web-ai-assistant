@@ -1,0 +1,16 @@
+Stellarium Web AI Teaching Assistant
+Copyright (c) 2026 - project contributors
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+Project source, tests, build recipes and host patches are in source/.
+Runtime and standalone assistant are separate candidate assets, not Git source.
+Internal evidence, credentials and deployment state are excluded from current assets.
+
+Based on Stellarium Web Engine, pinned at
+1162c9ef73cc94f4762dfbfd24c637190119ea93 (AGPL-3.0).
+The three host patches and build recipe are supplied; the full upstream tree
+is not bundled. Do not claim complete corresponding source. See
+release/SOURCE-ACCESS.md and THIRD-PARTY.md for acquisition routes and gaps.
+
+Provided as is, without warranty. This independent modification is not endorsed
+by or affiliated with the Stellarium developers. "Stellarium" is their name.

@@ -1,0 +1,30 @@
+{
+  "name": "stellarium-web-ai-assistant",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Bilingual teaching assistant for Stellarium Web: preview/confirm control, on-demand explanation, browser-direct OpenAI compatible client",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "serve": "node tools/serve.mjs ../packages/integrated-web/dist 8899",
+    "probe": "node tools/probe.mjs http://127.0.0.1:8899/",
+    "fake-openai": "node tests/fake-openai/server.mjs 8951",
+    "test": "node tests/e2e/smoke.mjs http://127.0.0.1:8899/",
+    "test:client": "node tests/e2e/client.mjs http://127.0.0.1:8899/",
+    "test:timeflow": "node tests/e2e/timeflow.mjs http://127.0.0.1:8899/",
+    "test:hotswap": "node tests/e2e/hotswap.mjs http://127.0.0.1:8899/",
+    "test:service": "node tests/service/run.mjs",
+    "test:server-ai": "node tests/e2e/server-ai.mjs",
+    "test:installer": "node tests/installer/safety.mjs",
+    "test:serve": "node tests/serve/paths.mjs",
+    "install:host": "node install/install.mjs",
+    "status": "node install/install.mjs --status",
+    "test:reference": "node tests/reference/consistency.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.49.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

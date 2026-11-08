@@ -1,0 +1,113 @@
+diff --git a/apps/web-frontend/src/locales/zh.json b/apps/web-frontend/src/locales/zh.json
+new file mode 100644
+index 00000000..44c7dadd
+--- /dev/null
++++ b/apps/web-frontend/src/locales/zh.json
+@@ -0,0 +1,58 @@
++{
++  "View Settings": "视图设置",
++  "Planets Tonight": "今夜行星",
++  "Data Credits": "数据来源",
++  "Search...": "搜索…",
++  "Observe": "观测",
++  "Constellations": "星座",
++  "Constellations Art": "星座艺术图",
++  "Atmosphere": "大气",
++  "Landscape": "地景",
++  "Azimuthal Grid": "地平网格",
++  "Equatorial Grid": "赤道网格",
++  "Deep Sky Objects": "深空天体",
++  "Night Mode": "夜间模式",
++  "Fullscreen": "全屏",
++  "Loading {0}, the online Star Map": "正在加载 {0} 在线星图",
++  "Could not show the Online Star Map": "无法显示在线星图",
++  "It seems that your browser cannot load Web Assembly!": "你的浏览器似乎无法加载 WebAssembly！",
++  "Web assembly is necessary for Stellarium Web to display the star map. Please upgrade your web browser and try again!": "Stellarium Web 需要 WebAssembly 才能显示星图。请升级浏览器后重试！",
++  "desktop version": "桌面版",
++  "In the meantime, you can try the {0}!": "在此期间，你可以试试 {0}！",
++  "Use Autolocation": "使用自动定位",
++  "My Locations": "我的地点",
++  "Use this location": "使用此地点",
++  "Unknown Address": "未知地址",
++  "Lat {0}° Lon {1}°": "纬度 {0}° 经度 {1}°",
++  "Unknown": "未知",
++  "Near {0}": "{0} 附近",
++  "Planets Visibility": "行星可见性",
++  "Night from {0} to {1}": "夜间 {0} 至 {1}",
++  "Rise": "升起",
++  "Set": "落下",
++  "Magnitude": "星等",
++  "Distance": "距离",
++  "Radius": "半径",
++  "Spectral Type": "光谱型",
++  "Size": "大小",
++  "Ra/Dec": "赤经/赤纬",
++  "Az/Alt": "方位/高度",
++  "Phase": "相位",
++  "Not visible tonight": "今夜不可见",
++  "Always visible tonight": "今夜始终可见",
++  "Rise: {0}&nbsp;&nbsp;&nbsp; Set: {1}": "升起：{0}&nbsp;&nbsp;&nbsp; 落下：{1}",
++  "Visibility": "可见性",
++  "View settings": "视图设置",
++  "Milky Way": "银河",
++  "DSS": "DSS 影像",
++  "Simulate refraction": "模拟大气折射",
++  "Meridian Line": "子午线",
++  "Ecliptic Line": "黄道",
++  "Back to real time": "回到实时",
++  "Pause/unpause time": "暂停/继续时间",
++  "Dark night": "暗夜",
++  "Moonlight": "月光",
++  "Dawn": "黎明",
++  "Twilight": "暮光",
++  "Daylight": "白昼"
++}
+diff --git a/apps/web-frontend/src/main.js b/apps/web-frontend/src/main.js
+index 4ce9dcf1..95b3df0f 100644
+--- a/apps/web-frontend/src/main.js
++++ b/apps/web-frontend/src/main.js
+@@ -78,9 +78,23 @@ pluginsLocales.keys().forEach(key => {
+   }
+ })
+ 
+-const loc = 'en'
+-// Un-comment to select user's language automatically
+-// loc = (navigator.language || navigator.userLanguage).split('-')[0] || 'en'
++// Host UI language. Deliberately NOT derived from navigator.language or the OS:
++// this deployment is a teaching site whose host language is owned by the
++// assistant panel (task book 5.1), so it must be the same on every machine.
++// Order: ?lang= in the URL, then the remembered choice, then Chinese.
++const SUPPORTED_LOCALES = Object.keys(messages)
++function resolveLocale () {
++  const fromQuery = new URLSearchParams(window.location.search).get('lang')
++  if (fromQuery && SUPPORTED_LOCALES.indexOf(fromQuery) !== -1) {
++    return fromQuery
++  }
++  try {
++    const saved = window.localStorage.getItem('swe.uiLang')
++    if (saved && SUPPORTED_LOCALES.indexOf(saved) !== -1) return saved
++  } catch (e) {}
++  return SUPPORTED_LOCALES.indexOf('zh') !== -1 ? 'zh' : 'en'
++}
++const loc = resolveLocale()
+ Moment.locale(loc)
+ var i18n = new VueI18n({
+   locale: loc,
+@@ -90,6 +104,17 @@ var i18n = new VueI18n({
+   silentTranslationWarn: true
+ })
+ 
++// The assistant panel drives the host language through this hook, so switching
++// language does not reload the page and does not reset time/location/selection.
++// Returns false for an unsupported locale instead of silently falling back.
++window.__SWE_SET_LANG__ = function (target) {
++  if (!target || messages[target] === undefined) return false
++  i18n.locale = target
++  Moment.locale(target)
++  try { window.localStorage.setItem('swe.uiLang', target) } catch (e) {}
++  return true
++}
++
+ // Setup routes for the app
+ Vue.use(Router)
+ // Base routes

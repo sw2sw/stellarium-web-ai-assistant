@@ -1,0 +1,160 @@
+/* Stellarium Web AI Teaching Assistant - panel styles
+ * Dark, low-glare palette so the sky map keeps its contrast.
+ */
+
+.swe-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 330px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  min-width: 260px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  resize: horizontal;
+  font: 13px/1.5 "Roboto", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color: #cfd6dd;
+  background: rgba(14, 17, 21, 0.94);
+  border: 1px solid rgba(120, 150, 180, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.swe-panel.swe-collapsed .swe-body { display: none; }
+.swe-panel.swe-collapsed { resize: none; }
+
+.swe-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  cursor: move;
+  user-select: none;
+  background: rgba(30, 38, 48, 0.9);
+  border-bottom: 1px solid rgba(120, 150, 180, 0.18);
+}
+
+.swe-title { font-weight: 500; color: #e6edf3; }
+.swe-ver { color: #6f8496; font-size: 11px; }
+.swe-spacer { flex: 1; }
+
+.swe-icon-btn {
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  border: 1px solid rgba(120, 150, 180, 0.3);
+  border-radius: 5px;
+  background: transparent;
+  color: #9fb2c2;
+  cursor: pointer;
+  font-size: 13px;
+}
+.swe-icon-btn:hover { background: rgba(120, 150, 180, 0.16); color: #fff; }
+
+.swe-body {
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.swe-status {
+  font-size: 11px;
+  color: #7fb08a;
+  padding: 4px 6px;
+  border-radius: 5px;
+  background: rgba(70, 120, 90, 0.14);
+}
+.swe-status.swe-warn { color: #d8b46a; background: rgba(150, 120, 50, 0.14); }
+.swe-status.swe-err { color: #e0837c; background: rgba(150, 60, 55, 0.18); }
+
+.swe-sec h3 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7d92a4;
+}
+
+.swe-sel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(120, 150, 180, 0.14);
+  border-radius: 7px;
+  padding: 8px;
+}
+
+.swe-obj-name { font-size: 15px; color: #ffd9a0; font-weight: 500; }
+.swe-obj-type { font-size: 11px; color: #8fa3b5; margin-bottom: 6px; }
+
+.swe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
+
+.swe-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.swe-k { color: #7d92a4; }
+.swe-v { color: #cfd6dd; font-variant-numeric: tabular-nums; }
+
+.swe-note { margin: 6px 0 0; font-size: 11px; color: #6f8496; }
+.swe-empty { margin: 0; font-size: 12px; color: #7d92a4; }
+.swe-placeholder { margin: 0 0 6px; font-size: 11px; color: #c8a86a; }
+
+.swe-toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.swe-toggle {
+  padding: 4px 9px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 150, 180, 0.28);
+  background: transparent;
+  color: #8fa3b5;
+  cursor: pointer;
+}
+.swe-toggle:hover { border-color: rgba(160, 200, 230, 0.5); color: #dfe8ef; }
+.swe-toggle.on { background: rgba(90, 150, 210, 0.22); border-color: rgba(120, 180, 235, 0.55); color: #cfe6ff; }
+.swe-toggle.unknown { opacity: 0.45; }
+
+.swe-row-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+.swe-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(120, 150, 180, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: #cfd6dd;
+  cursor: pointer;
+}
+.swe-btn:hover { background: rgba(120, 160, 200, 0.2); color: #fff; }
+
+.swe-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 7px;
+  font-size: 12px;
+  color: #dfe8ef;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(120, 150, 180, 0.28);
+  border-radius: 6px;
+  color-scheme: dark;
+}
+.swe-input:focus { outline: 1px solid rgba(120, 180, 235, 0.6); }
+
+.swe-pre {
+  margin: 0;
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #a9bccb;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow-x: auto;
+  max-height: 180px;
+}
+
+@media (max-width: 640px) {
+  .swe-panel { right: 8px; bottom: 8px; width: calc(100vw - 16px); }
+}

@@ -1,0 +1,35 @@
+# dependencies (tests only; never shipped)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# build output: restore from the runtime Release asset, do not commit
+# (root only - source/packages/ holds real source and must stay tracked)
+/packages/
+/dist/
+
+# local runtime state
+*.log
+/evidence/
+.env
+.env.*
+**/ai-service-data/
+*.key
+*.db
+*.db-wal
+*.db-shm
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# local scratch
+tmp/
+.tmp/
+*.tmp
+*.bak
+*.orig

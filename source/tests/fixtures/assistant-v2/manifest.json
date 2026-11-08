@@ -1,0 +1,8 @@
+{
+  "protocolVersion": 2,
+  "version": "0.13.0",
+  "entry": "assistant.js",
+  "style": "assistant.css",
+  "builtAt": "2026-10-31T07:30:00Z",
+  "notes": "Hot-swap fixture: a deliberately higher version of the panel plus a locate-by-name box and a data-swe-fixture marker, so a hot update is visible in the DOM."
+}

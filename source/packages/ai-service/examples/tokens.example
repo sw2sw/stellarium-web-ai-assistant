@@ -1,0 +1,27 @@
+# 口令文件格式
+#
+# 两个文件，内容格式相同：一行一个口令，空行忽略，`#` 开头是注释。
+# 通过 SWE_ACCESS_TOKENS_FILE / SWE_ADMIN_TOKENS_FILE 指定路径。
+#
+# 为什么用文件而不是环境变量：
+#   - 文件按 mtime 重读，删掉一行就在下一次请求生效，不用重启服务；
+#   - 口令不会出现在进程环境里（`ps e` / 容器 inspect 看不到）；
+#   - 可以把文件权限压到 0600、属主给服务账号。
+#
+# 建议：一个班一行，名字写在注释里，期末整行删掉。
+#   chmod 600 /etc/swe-ai/*.tokens
+#   chown swe-ai:swe-ai /etc/swe-ai/*.tokens
+
+# --- /etc/swe-ai/class.tokens（课堂口令，能走付费路由） -------------------
+# 口令建议 ≥ 16 字符，随机生成，不要用班级名或日期。
+# 生成：node -e "console.log(require('crypto').randomBytes(12).toString('base64url'))"
+# 高一(3)班 2026 秋
+K7fQ2mZp9xR4tLwA
+# 高一(4)班 2026 秋
+B3nH8vYc6sJ1dEqT
+# 临时访客（用完删掉这一行即可，无需重启）
+V9pR5kWm2tZ7xNfL
+
+# --- /etc/swe-ai/admin.tokens（管理口令，能改配置、看额度、紧急停用） -----
+# 只发给运维/教研负责人，不要和课堂口令混用，也不要写进任何课件。
+Adm1n-0nly-ChangeMe-2026

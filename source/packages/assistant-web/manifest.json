@@ -1,0 +1,12 @@
+{
+  "protocolVersion": 2,
+  "version": "0.14.0",
+  "entry": "assistant.js",
+  "style": "assistant.css",
+  "references": [
+    "naming-reference.js",
+    "sky-targets.js"
+  ],
+  "builtAt": "2026-11-07T00:00:00Z",
+  "notes": "0.14.0 upgrades the explanation into a three-part teaching answer (what it is and why it is worth seeing, what the current snapshot means with real readbacks at honest precision, what to do next for chart/eye/eyepiece), adds a multi-turn chat popup (continue about the explained body, or ask the sky with no selection) that reuses the existing source/timeout/cancel/quota boundaries, keeps sessions in memory only with a bounded recent-turn history, and never lets a late or cancelled reply into a new session. Adds current-time recommendations for the Moon and the eight planets: candidates and numbers are selected by deterministic rules over read-only engine queries (bridge 0.11.0 queryBodies - no selection, time or view side effects), split for naked-eye and small-telescope viewing with honest exclusions (daylight inner planets, low altitude, below horizon), and the model only phrases what the program selected. An external curated-target file can be added as a second provider behind a validated data-only schema; a missing or corrupt file never takes the builtin provider down. Model text is rendered as plain text everywhere."
+}

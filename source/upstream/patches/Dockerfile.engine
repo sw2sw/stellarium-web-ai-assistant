@@ -1,0 +1,18 @@
+FROM emscripten/emsdk:1.39.17
+
+# Upstream Dockerfile.jsbuild does `apt-get install scons`, but the Debian
+# buster apt repositories are archived and return 404, so the image can no
+# longer be built as-is. scons is installed from PyPI instead.
+# Two extra fixes are needed on this base image:
+#   1. pip drops the package under .../dist-packages/scons/SCons, which is not
+#      importable as `SCons`; a symlink restores the expected name.
+#   2. the scons console script uses `#!/usr/bin/env python`, which resolves to
+#      python2.7 here; it is repointed at python3.
+RUN pip3 install --no-cache-dir scons==3.1.2 \
+ && ln -sfn /usr/local/lib/python3.7/dist-packages/scons/SCons \
+           /usr/local/lib/python3.7/dist-packages/SCons \
+ && sed -i '1s|.*|#!/usr/bin/env python3|' /usr/local/bin/scons \
+ && python3 -c "import SCons; print('scons', SCons.__version__)" \
+ && scons --version | head -2
+
+WORKDIR /app
