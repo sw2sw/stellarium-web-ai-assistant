@@ -1,42 +1,36 @@
-# 上游锁定清单
+# 上游版本与构建材料
 
-| 项 | 值 |
+| 项目 | 固定值或范围 |
 |---|---|
-| 仓库 | https://github.com/Stellarium/stellarium-web-engine |
-| commit | `1162c9ef73cc94f4762dfbfd24c637190119ea93` |
-| commit 日期 | 2026-10-20 |
-| commit 标题 | Bump launch-editor from 2.2.1 to 2.14.2 in /apps/web-frontend |
-| 许可 | AGPL-3.0（`LICENSE-AGPL-3.0.txt`），上游另提供商业许可 |
-| 复用的子目录 | `apps/web-frontend`（Web 界面 + 插件生命周期），`src/`（引擎 C 源码） |
-| 未使用 | `apps/simple-html`、`apps/test-skydata` 之外的示例、桌面端、`tools/` 里的文档生成 |
+| 上游仓库 | https://github.com/Stellarium/stellarium-web-engine |
+| 源码提交 | `1162c9ef73cc94f4762dfbfd24c637190119ea93` |
+| 上游许可 | AGPL-3.0；上游另提供商业许可 |
+| 宿主前端 | `apps/web-frontend` |
+| 引擎源码 | `src/` 及所需根构建文件 |
+| 示例数据 | `apps/test-skydata` |
+| Emscripten | `emscripten/emsdk:1.39.17` |
+| SCons | `3.1.2`，见 `patches/Dockerfile.engine` |
+| 前端构建环境 | 参考命令使用 `node:20-alpine` |
 
-## 为什么是这个 commit
+固定提交用于明确适配目标，不表示它是上游最新版本。镜像标签不是不可变摘要，也不是对完整构建环境的锁定。
 
-2026-10-30 查询时它同时是 `refs/heads/master` 与 `HEAD`，与 `体积核查.md` 记录的公开基线一致。选 HEAD 而不是更早的 tag，是因为上游没有为 Web 前端发版本号，只有 commit 可追溯。
+## 本仓库包含的宿主修改
 
-## 依赖锁定
+1. `patches/0001-web-frontend-vue2.patch`：调整 `package.json` 的 Vue 版本范围为 `^2.6.11`。
+2. `patches/0002-web-frontend-zh-locale.patch`：添加中文界面与语言切换钩子。
+3. `patches/0003-local-fonts.patch`：移除首页 Google Fonts 外链，使用已有本地字体。
+4. `patches/Dockerfile.engine`：引擎构建镜像配方，通过 PyPI 提供 SCons。
 
-| 层 | 锁定方式 |
-|---|---|
-| C 引擎 | commit SHA + `SConstruct` |
-| Emscripten | `emscripten/emsdk:1.39.17`（上游 Dockerfile 指定） |
-| 前端 JS 依赖 | `apps/web-frontend/yarn.lock`（445 KB，`--frozen-lockfile` 安装） |
-| Node | 20-alpine（上游写 12.10.0，已失效，见 `UPSTREAM-BUILD.md` 坑 4） |
-| scons | 3.1.2（PyPI，上游写 apt 装，源已 404） |
+三份源码补丁不修改引擎 C 源码。字体补丁改变首页模板；仅成功应用补丁不等于已验证整个站点的重建结果。
 
-`yarn.lock` 未做任何修改。
+## 构建材料范围
 
-## 上游改动清单（三份源码补丁 + 构建环境替代）
+本仓库未包含完整上游树、对应前端 `yarn.lock` 和完整星图数据。取得源码提交后，仍需确认依赖锁、数据和构建工具与目标宿主匹配；不能把新解析的依赖视作已登记构建的等价依赖。
 
-1. `apps/web-frontend/package.json`：`"vue": "^3.0.0"` → `"^2.6.11"`（`patches/0001-web-frontend-vue2.patch`）
-2. `apps/web-frontend/src/main.js` 与新增 `src/locales/zh.json`：宿主双语与语言钩子（`patches/0002-web-frontend-zh-locale.patch`）。
-3. `apps/web-frontend/public/index.html`：删除 Google Fonts 外链（`patches/0003-local-fonts.patch`），使用原有本地字体；锁定模板 apply 检查成功，本次未重建。
-4. 构建镜像：上游 `Dockerfile.jsbuild` 改为 `patches/Dockerfile.engine`（不改上游文件，另存一份）
+构建参考命令见[UPSTREAM-BUILD.md](../docs/UPSTREAM-BUILD.md)。目前不承诺完整三补丁组合的端到端可复现构建，也不以此文件代替完整对应源码交付。
 
-除上述文件外没有新增上游修改；引擎 C/WASM 不变。运行包的字体首页覆盖与重建模板补丁分开记账。
+## 许可与源码提供
 
-## 许可证义务提醒
+本项目源码采用 AGPL-3.0-or-later，保留宿主自身的许可义务。网络提供服务或分发整合运行包时，应评估适用的对应源码提供要求；私有仓库权限本身不能保证所有网站用户可获得匹配源码。
 
-宿主为 AGPL-3.0。本项目通过注入脚本 + 独立助手资源与之组合，**不改变宿主自身的 AGPL 义务**。若要分发整合包，需同时提供宿主对应源码与上述三补丁及构建说明。commit 是获取指定位，不等于源码已交付；具体获取路线及尚未闭合项见 `../../release/SOURCE-ACCESS.md`。
-
-助手自身代码沿用 AGPL-3.0-or-later（与宿主一致，避免混许可带来的合规判断成本）。
+已有材料与尚缺材料见[对应源码范围](../../release/SOURCE-ACCESS.md)，第三方组件与数据边界见[THIRD-PARTY.md](../../THIRD-PARTY.md)。

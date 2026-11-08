@@ -1,12 +1,8 @@
 # 服务器 AI：配置、额度与部署边界
 
-> 下文包含服务器AI的接口设计与早期阶段记录。当前功能、配置边界和已知限制以根README为入口；历史阶段描述不代表当前部署状态。
+本文介绍可选同源 AI 服务（`packages/ai-service`）及助手的 server 模式，覆盖认证、配置、提供商密钥、额度存储和部署检查。
 
-本文件描述 P0 阶段的服务器 AI（`packages/ai-service` + `packages/assistant-web` 的 server 模式）。
-它替代上一轮部署时打在 `assistant.js` 上的 180 秒热补丁，并把"谁能用、用多少、密钥放哪、
-失败怎么算"从口头约定变成代码里的约束。
-
-本文件不提供特定部署环境的运维记录。中文名称扩展、语音接口和平台适配须按各自范围核实；真实模型调用需明确预算。
+功能入口与已知限制见[项目说明](../../README.md)。实际部署应使用独立配置与数据目录；真实模型验证会产生调用和费用，应预先设置预算。
 
 ---
 
@@ -23,7 +19,7 @@ ai-service（Node，与站点同源，同端口）
 上游（Ollama / Spark / 任何 OpenAI 兼容端点）
 ```
 
-三条边界是本轮的核心：
+服务遵循以下边界：
 
 - **浏览器不持有厂商密钥。** server 模式下页面只有 `{source, baseUrl, model, hasKey}`，
   `hasKey` 是布尔值。密钥只在服务进程里、只在发往上游的那一跳出现。
@@ -325,7 +321,7 @@ node packages/ai-service/server.mjs
    `authFiles` 里两个口令来源都要是 `true`——这三项是"数据目录没坏"的最低证明。
 5. 管理页点一次"检查连接"（不占额度），再让一位老师点一次真实提问。
 
-数据兼容：`config.json` 的 `schema` 为 1，本轮没有改结构；`quota.db` 表结构未变。
+数据兼容：`config.json` 的 `schema` 为 1；升级前应备份配置、身份密钥和完整额度数据库。
 从 0.1.0 升级时，旧的 `config.json` 会被补上缺省字段，不需要手工迁移。
 
 ## 13. 回滚
@@ -351,29 +347,17 @@ node packages/ai-service/server.mjs
 回滚**不要**删数据目录：`identity.key` 一旦丢失，所有人的当日额度都会归零；
 `quota.db` 丢失等于把当天的账清空。若确实要清零，那是运维决定，请显式执行并记录。
 
-## 14. 验收
+## 14. 测试入口
+
+从 `source/` 目录执行不需要宿主站点的服务端测试：
 
 ```bash
-node tests/service/run.mjs                                  # 353 项，无浏览器
-DIST_DIR=../packages/integrated-web/dist node tests/e2e/server-ai.mjs
-                                                            # 121 项，真服务 + 假上游
-node tools/serve.mjs ../packages/integrated-web/dist 8899    # 先起静态站点
-node tests/e2e/smoke.mjs  http://127.0.0.1:8899/            # 36 项
-node tests/e2e/client.mjs http://127.0.0.1:8899/            # 138 项
-node tests/e2e/timeflow.mjs http://127.0.0.1:8899/          # 31 项
-DIST_DIR=../packages/integrated-web/dist node tests/e2e/hotswap.mjs
-                                                            # 33 项（自建临时副本）
-node tests/installer/safety.mjs                             # 143 项
-node tests/serve/paths.mjs                                  # 6 项
-node tests/reference/consistency.mjs                        # 42 项
+node tests/service/run.mjs
 ```
 
-`server-ai.mjs` 会自己拉起 `packages/ai-service/server.mjs`（端口 8900，数据目录是临时
-目录）和一个假上游（随机回环端口），跑完即退出；它不读也不写任何真实配置，不联网。
-`DIST_DIR` 决定被测的整合站点：默认指向仓库内 `packages/integrated-web/dist` 时，
-测试加载的字节就是交付清单（`SHA256SUMS`）冻结的那份。
+浏览器套件 `tests/e2e/server-ai.mjs` 需要自行准备实际浏览器、依赖和独立可写的宿主副本。按脚本参数设置 `DIST_DIR`；该运行目录不随源码仓库提供。套件使用临时服务、临时数据与假上游，不应指向生产配置或真实额度目录。
 
-日志与截图见 `evidence/logs/`、`evidence/screenshots/`。
+其他测试入口见[源码导航](../README.md)。测试结果取决于实际执行环境；假上游测试不代表真实提供商的兼容性或内容质量。
 
 ## 15. 已知边界
 

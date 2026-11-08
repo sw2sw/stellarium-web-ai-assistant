@@ -23,6 +23,6 @@ node tests/serve/paths.mjs
 node tests/installer/safety.mjs
 ```
 
-需要宿主站点的测试应使用独立可写的QA副本。支持环境变量的套件可指定`DIST_DIR`与`CHROME_PATH`；各浏览器脚本的具体参数以文件开头说明为准。不要在生产数据目录或冻结交付上运行会写入截图、安装状态和测试数据的套件。
+需要宿主站点的测试应使用独立可写的测试副本。支持环境变量的套件可指定`DIST_DIR`与`CHROME_PATH`；各浏览器脚本的具体参数以文件开头说明为准。不要在生产数据目录或唯一站点副本上运行会写入截图、安装状态和测试数据的套件。
 
 安装、构建、交互和服务端设置分别见`docs/INSTALL.md`、`docs/UPSTREAM-BUILD.md`、`docs/INTERACTION.md`及`docs/SERVER-AI.md`。源码范围与第三方许可边界见仓库根README和`release/SOURCE-ACCESS.md`。
